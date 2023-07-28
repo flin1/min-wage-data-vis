@@ -1,10 +1,155 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-<head>
-<title>US Air Pollution (2000-2016) Narrative Visualization</title>
-<meta name="description" content="Overview of air pollution data">
-</head>
-<body>
-    
-</body>
+  <head>
+    <title>US Leading Causes of Death Narrative Visualization</title>
+    <meta name="description" content="Overview of death causes" />
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="d3_annotation.js"></script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body onload="main()">
+    <div class="content">
+      <svg></svg>
+      <div id = "tooltip" opacity = "0"></div>
+      <div class="dropdown"></div>
+      </div>
+    </div>
+
+    <script>
+      async function main() {
+        var data = await d3
+          .csv("leading.csv")
+          .then(function (data) {
+            console.log(data);
+            return data;
+          })
+          .catch(function () {
+            console.log("data not processed");
+          });
+
+        const type = d3.annotationLabel
+        var x = d3.scaleTime()
+        .domain(d3.extent(data, function(d) { 
+          return new Date(d["Year"]); 
+        })).range([0, 1000]);
+        var parseTime = d3.timeParse("%Y");
+
+        var y = d3.scaleLog().domain([10, 100000]).range([600, 0]);
+
+        var svg = d3.select("svg").attr("width", 1200).attr("height", 900);
+
+        var g = svg.append("g").attr("transform", "translate(50,50)");
+        
+        // create a tooltip
+        var tooltip = svg
+          .append("div")
+          .style("opacity", 0)
+          .attr("class", "tooltip")
+          .style("background-color", "white")
+          .style("border", "solid")
+          .style("border-width", "2px")
+          .style("border-radius", "5px")
+          .style("padding", "5px")
+
+        g.selectAll("circle")
+          .data(data)
+          .enter()
+          .append("circle")
+          .attr("class", "nitrogen")
+          .attr("cx", function (d, i) {
+            return x(parseTime(d["Year"]));
+          })
+          .attr("cy", function (d, i) {
+            return y(d["Deaths"]);
+          })
+          .attr("r", function (d) {
+            return 2;
+          }).on("mouseover", function(d,i){
+            tooltip.style("opacity", 1)
+            d3.select(this)
+              .style("stroke", "black")
+              .style("opacity", 1)
+          });
+
+        // y axis
+        var g2 = svg
+          .append("g")
+          .attr("transform", "translate(50,50)")
+          .call(d3.axisLeft(y))
+          .attr("fill", "none")
+          .attr("font-size", "10")
+          .attr("font-family", "sans-serif")
+          .attr("text-anchor", "end");
+
+        // x axis
+        var g3 = svg
+          .append("g")
+          .attr("transform", "translate(50,650)")
+          .call(d3.axisBottom(x))
+          .attr("fill", "none")
+          .attr("font-size", "10")
+          .attr("font-family", "sans-serif")
+          .attr("text-anchor", "middle");
+
+        // x axis label
+        svg
+          .append("text")
+          .attr("x", 450)
+          .attr("y", 700)
+          .style("text-anchor", "middle")
+          .text("Year");
+
+        // y axis label
+        svg
+          .append("text")
+          .attr("text-anchor", "end")
+          .attr("transform", "rotate(-90)")
+          .attr("y", 0)
+          .attr("x", -300)
+          .attr("dy", ".75em")
+          .text("Deaths");
+
+
+
+          const annotations = [{
+            note: {
+              label: "Hover on points to get additional details. (click to move on)",
+              bgPadding: 20,
+              title: "Step 1:"
+            },
+            //can use x, y directly instead of data
+            className: "show-bg",
+            x: 550, 
+            y: 400,
+            dy: -137,
+            dx: -162
+          },{
+            note: {
+              label: "Use a dropdown to show just points from a certain cause of death (click to move on)",
+              bgPadding: 20,
+              title: "Step 2:"
+            },
+            //can use x, y directly instead of data
+            className: "show-bg",
+            x: 100, 
+            y: 800,
+            dy: -1,
+            dx: 100
+          }]
+
+          const makeAnnotations = d3.annotation()
+            .editMode(false)
+            //also can set and override in the note.padding property
+            //of the annotation object
+            .notePadding(10)
+            .type(type)
+            .annotations(annotations)
+
+          d3.select("svg")
+            .append("g")
+            .attr("class", "annotation-group")
+            .call(makeAnnotations)            
+      }
+    </script>
+  </body>
 </html>
