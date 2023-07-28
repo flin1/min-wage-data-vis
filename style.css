@@ -1,10 +1,10 @@
 circle {
-    fill: lightblue;
+    fill: orange;
     stroke: black;
   }
 
-.nitrogen {
-  fill: red;
-  stroke: black;
+h2 {
+  font-family: 'Abel', sans-serif;
+  font-family: 'Roboto Slab', serif;
+  text-align: center;
 }
-

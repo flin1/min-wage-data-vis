@@ -6,13 +6,15 @@
     <script src="https://d3js.org/d3.v5.min.js"></script>
     <script src="d3_annotation.js"></script>
     <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Abel&family=Roboto+Slab:wght@300&display=swap" rel="stylesheet">
   </head>
   <body onload="main()">
-    <div class="content">
+    <h2>US Leading Causes of Death Narrative Visualization</h2>
+    <div id="content">
       <svg></svg>
-      <div id = "tooltip" opacity = "0"></div>
       <div class="dropdown"></div>
-      </div>
     </div>
 
     <script>
@@ -34,14 +36,14 @@
         })).range([0, 1000]);
         var parseTime = d3.timeParse("%Y");
 
-        var y = d3.scaleLog().domain([10, 100000]).range([600, 0]);
+        var y = d3.scaleLog().domain([10, 10000]).range([600, 0]);
 
         var svg = d3.select("svg").attr("width", 1200).attr("height", 900);
 
         var g = svg.append("g").attr("transform", "translate(50,50)");
         
         // create a tooltip
-        var tooltip = svg
+        var tooltip = d3.select("body")
           .append("div")
           .style("opacity", 0)
           .attr("class", "tooltip")
@@ -50,12 +52,15 @@
           .style("border-width", "2px")
           .style("border-radius", "5px")
           .style("padding", "5px")
+          .style("width", "200px")
+          .style("height", "50px")
+          .style("position", "absolute");
 
+        // data
         g.selectAll("circle")
           .data(data)
           .enter()
           .append("circle")
-          .attr("class", "nitrogen")
           .attr("cx", function (d, i) {
             return x(parseTime(d["Year"]));
           })
@@ -65,10 +70,10 @@
           .attr("r", function (d) {
             return 2;
           }).on("mouseover", function(d,i){
-            tooltip.style("opacity", 1)
-            d3.select(this)
-              .style("stroke", "black")
-              .style("opacity", 1)
+            tooltip.style("opacity", 1).html("STATE: " + d["State"]+" \n" + "DEATHS: " + d["Deaths"]+" \n" + "CAUSE: " + d["Cause Name"]+" \n")
+            .style("top",(d3.event.pageY)+"px").style("left",(d3.event.pageX)+"px");
+          }).on("mouseout", function(d,i){
+            tooltip.style("opacity", 0);
           });
 
         // y axis
@@ -78,7 +83,7 @@
           .call(d3.axisLeft(y))
           .attr("fill", "none")
           .attr("font-size", "10")
-          .attr("font-family", "sans-serif")
+          .attr("font-family", "Roboto Slab, serif")
           .attr("text-anchor", "end");
 
         // x axis
@@ -88,7 +93,7 @@
           .call(d3.axisBottom(x))
           .attr("fill", "none")
           .attr("font-size", "10")
-          .attr("font-family", "sans-serif")
+          .attr("font-family", "Roboto Slab, serif")
           .attr("text-anchor", "middle");
 
         // x axis label
@@ -97,7 +102,8 @@
           .attr("x", 450)
           .attr("y", 700)
           .style("text-anchor", "middle")
-          .text("Year");
+          .text("Year")
+          .attr("font-family", "Roboto Slab, serif");
 
         // y axis label
         svg
@@ -107,13 +113,14 @@
           .attr("y", 0)
           .attr("x", -300)
           .attr("dy", ".75em")
-          .text("Deaths");
+          .text("Deaths")
+          .attr("font-family", "Roboto Slab, serif");
 
 
-
+        // annotations
           const annotations = [{
             note: {
-              label: "Hover on points to get additional details. (click to move on)",
+              label: "Hover on points to get additional details. (click to remove instructions)",
               bgPadding: 20,
               title: "Step 1:"
             },
@@ -125,7 +132,7 @@
             dx: -162
           },{
             note: {
-              label: "Use a dropdown to show just points from a certain cause of death (click to move on)",
+              label: "Use a dropdown to show just points from a certain cause of death. (click to remove instructions)",
               bgPadding: 20,
               title: "Step 2:"
             },
@@ -133,8 +140,8 @@
             className: "show-bg",
             x: 100, 
             y: 800,
-            dy: -1,
-            dx: 100
+            dy: -20,
+            dx: 150
           }]
 
           const makeAnnotations = d3.annotation()
@@ -148,7 +155,16 @@
           d3.select("svg")
             .append("g")
             .attr("class", "annotation-group")
-            .call(makeAnnotations)            
+            .call(makeAnnotations);    
+            
+            d3.select("svg")
+            .on("click", function() {
+              d3.select(".annotations").remove();
+          })
+
+        // dropdown
+          
+
       }
     </script>
   </body>
