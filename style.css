@@ -3,7 +3,7 @@ circle {
     stroke: black;
   }
 
-h2 {
+h2, h4 {
   font-family: 'Abel', sans-serif;
   font-family: 'Roboto Slab', serif;
   text-align: center;

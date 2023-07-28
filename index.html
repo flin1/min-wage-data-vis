@@ -1,17 +1,28 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>US Leading Causes of Death Narrative Visualization</title>
+    <title>
+      US Leading Causes of Death (1999-2017) Narrative Visualization
+    </title>
     <meta name="description" content="Overview of death causes" />
     <script src="https://d3js.org/d3.v5.min.js"></script>
     <script src="d3_annotation.js"></script>
     <link rel="stylesheet" href="style.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Abel&family=Roboto+Slab:wght@300&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Abel&family=Roboto+Slab:wght@300&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body onload="main()">
-    <h2>US Leading Causes of Death Narrative Visualization</h2>
+    <h2>US Leading Causes of Death (1999-2017) Narrative Visualization</h2>
+    <h4>
+      Sourced from
+      <a
+        >https://www.kaggle.com/datasets/adelanseur/leading-causes-of-death-in-the-us-1999-2017</a
+      >
+    </h4>
     <div id="content">
       <svg></svg>
       <div class="dropdown"></div>
@@ -29,21 +40,26 @@
             console.log("data not processed");
           });
 
-        const type = d3.annotationLabel
-        var x = d3.scaleTime()
-        .domain(d3.extent(data, function(d) { 
-          return new Date(d["Year"]); 
-        })).range([0, 1000]);
+        const type = d3.annotationLabel;
+        var x = d3
+          .scaleTime()
+          .domain(
+            d3.extent(data, function (d) {
+              return new Date(d["Year"]);
+            })
+          )
+          .range([0, 1000]);
         var parseTime = d3.timeParse("%Y");
 
         var y = d3.scaleLog().domain([10, 10000]).range([600, 0]);
 
-        var svg = d3.select("svg").attr("width", 1200).attr("height", 900);
+        var svg = d3.select("svg").attr("width", 1200).attr("height", 700);
 
         var g = svg.append("g").attr("transform", "translate(50,50)");
-        
+
         // create a tooltip
-        var tooltip = d3.select("body")
+        var tooltip = d3
+          .select("body")
           .append("div")
           .style("opacity", 0)
           .attr("class", "tooltip")
@@ -68,11 +84,26 @@
             return y(d["Deaths"]);
           })
           .attr("r", function (d) {
-            return 2;
-          }).on("mouseover", function(d,i){
-            tooltip.style("opacity", 1).html("STATE: " + d["State"]+" \n" + "DEATHS: " + d["Deaths"]+" \n" + "CAUSE: " + d["Cause Name"]+" \n")
-            .style("top",(d3.event.pageY)+"px").style("left",(d3.event.pageX)+"px");
-          }).on("mouseout", function(d,i){
+            return 4;
+          })
+          .on("mouseover", function (d, i) {
+            tooltip
+              .style("opacity", 1)
+              .html(
+                "STATE: " +
+                  d["State"] +
+                  " \n" +
+                  "DEATHS: " +
+                  d["Deaths"] +
+                  " \n" +
+                  "CAUSE: " +
+                  d["Cause Name"] +
+                  " \n"
+              )
+              .style("top", d3.event.pageY + "px")
+              .style("left", d3.event.pageX + "px");
+          })
+          .on("mouseout", function (d, i) {
             tooltip.style("opacity", 0);
           });
 
@@ -99,7 +130,7 @@
         // x axis label
         svg
           .append("text")
-          .attr("x", 450)
+          .attr("x", 550)
           .attr("y", 700)
           .style("text-anchor", "middle")
           .text("Year")
@@ -116,55 +147,87 @@
           .text("Deaths")
           .attr("font-family", "Roboto Slab, serif");
 
-
         // annotations
-          const annotations = [{
+        const annotations = [
+          {
             note: {
-              label: "Hover on points to get additional details. (click to remove instructions)",
+              label:
+                "Hover on points to get additional details. (click to remove instructions)",
               bgPadding: 20,
-              title: "Step 1:"
+              title: "Step 1:",
             },
             //can use x, y directly instead of data
             className: "show-bg",
-            x: 550, 
+            color: ["#69b3a2"],
+            x: 550,
             y: 400,
             dy: -137,
-            dx: -162
-          },{
+            dx: -162,
+          },
+          {
             note: {
-              label: "Use a dropdown to show just points from a certain cause of death. (click to remove instructions)",
+              label:
+                "Use a dropdown to show just points from a certain cause of death. (click to remove instructions)",
               bgPadding: 20,
-              title: "Step 2:"
+              title: "Step 2:",
             },
             //can use x, y directly instead of data
             className: "show-bg",
-            x: 100, 
-            y: 800,
-            dy: -20,
-            dx: 150
-          }]
+            color: ["#69b3a2"],
+            x: 100,
+            y: 700,
+            dy: -10,
+            dx: 150,
+          },
+        ];
 
-          const makeAnnotations = d3.annotation()
-            .editMode(false)
-            //also can set and override in the note.padding property
-            //of the annotation object
-            .notePadding(10)
-            .type(type)
-            .annotations(annotations)
+        const makeAnnotations = d3
+          .annotation()
+          .editMode(false)
+          //also can set and override in the note.padding property
+          //of the annotation object
+          .notePadding(10)
+          .type(type)
+          .annotations(annotations);
 
-          d3.select("svg")
-            .append("g")
-            .attr("class", "annotation-group")
-            .call(makeAnnotations);    
-            
-            d3.select("svg")
-            .on("click", function() {
-              d3.select(".annotations").remove();
-          })
+        d3.select("svg")
+          .append("g")
+          .attr("class", "annotation-group")
+          .call(makeAnnotations);
+
+        d3.select("svg").on("click", function () {
+          d3.select(".annotations").remove();
+        });
 
         // dropdown
-          
+        var map = d3.map();
+        data.forEach(function (d) {
+          if (!map.has(d["Cause Name"])) {
+            map.set(d["Cause Name"], d["Cause Name"]);
+          }
+        });
+        var dropdown = d3.select(".dropdown").append("select");
+        dropdown
+          .selectAll("option")
+          .data(map.keys())
+          .enter()
+          .append("option")
+          .text(function (d) {
+            return d;
+          })
+          .attr("value", function (d) {
+            return d;
+          });
 
+        function updateChart(cause) {
+          
+        }
+
+        d3.select(".dropdown").on("change", function (d) {
+          var cause = eval(d3.select(".dropdown").property('value'));
+          console.log("info" + cause);
+          updateChart(cause);
+        });
       }
     </script>
   </body>
