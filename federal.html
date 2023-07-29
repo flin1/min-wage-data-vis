@@ -23,17 +23,17 @@
         >https://www.kaggle.com/datasets/lislejoem/us-minimum-wage-by-state-from-1968-to-2017</a
       >
     </h4>
+    <button id = "prev"><a href = "index.html">Prev</a></button>
+    <button id = "next"><a href = "modern.html">Next</a></button>
 
-    <button id = "next"><a href = "federal.html">Next</a></button>
-
-    <h4>This chart features the minimum wage data for US states and territories from 1968-2020 NOT adjusted for modern day inflation.</h4>
+    <h4>This chart features the federal minimum wage data from 1968-2020 NOT adjusted for modern day inflation.</h4>
     <p>Hover over data points to see more details!</p>
     <div id="content">
       <svg></svg>
     </div>
 
     <script>
-      async function main() {
+ async function main() {
         var data = await d3
           .csv("minimum.csv")
           .then(function (data) {
@@ -55,7 +55,7 @@
           .range([0, 1000]);
         var parseTime = d3.timeParse("%Y");
 
-        var y = d3.scaleLinear().domain([0,16]).range([600, 0]);
+        var y = d3.scaleLinear().domain([0,10]).range([600, 0]);
 
         var svg = d3.select("svg").attr("width", 1200).attr("height", 700);
 
@@ -86,21 +86,18 @@
             return x(parseTime(d["Year"]));
           })
           .attr("cy", function (d, i) {
-            return y(d["State.Minimum.Wage"]);
+            return y(d["Federal.Minimum.Wage"]);
           })
           .attr("r", "5")
           .on("mouseover", function (d, i) {
             tooltip
               .style("opacity", 1)
               .html(
-                "STATE: " +
-                  d["State"] +
-                  " \n" +
                   "YEAR: " +
                   d["Year"] +
                   " \n" +
                   "WAGE: " +
-                  d["State.Minimum.Wage"] +
+                  d["Federal.Minimum.Wage"] +
                   " \n"
               )
               .style("top", d3.event.pageY + "px")
@@ -147,7 +144,7 @@
           .attr("y", 0)
           .attr("x", -300)
           .attr("dy", ".75em")
-          .text("State Minimum Wage in Dollars")
+          .text("Federal Minimum Wage in Dollars")
           .attr("font-family", "Roboto Slab, serif");
 
 // annotations
@@ -155,7 +152,7 @@ const annotations = [
           {
             note: {
               label:
-                "Though minimum wage across states are increasing, there are still some states such as Alabama and Tennessee that have not adopted any minimum wage policies. ",
+                "As the years go on, more legislation is passed to increase minimum wage in accordance with the annual inflation rate of 3.8%",
               bgPadding: 20,
               title: "Trends",
             },
@@ -163,8 +160,8 @@ const annotations = [
             className: "show-bg",
             color: ["#69b3a2"],
             x: 550,
-            y: 650,
-            dy: -400,
+            y: 400,
+            dy: -137,
             dx: -162,
           },
         ];

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>US Minimum Wage (1968-2020) Narrative Visualization</title>
+    <meta name="description" content="Overview of death causes" />
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="d3_annotation.js"></script>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Abel&family=Roboto+Slab:wght@300&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body onload="main()">
+    <h2>US Minimum Wage (1968-2020) Narrative Visualization</h2>
+    <h4>
+      Sourced from
+      <a
+        >https://www.kaggle.com/datasets/lislejoem/us-minimum-wage-by-state-from-1968-to-2017</a
+      >
+    </h4>
+    <button id="prev"><a href="modern.html">Prev</a></button>
+
+    <h4>
+      Your turn! Modify the data to find your own trends in the changing minimum
+      wages by using the data filters below
+    </h4>
+    <div id="content">
+      <svg></svg>
+      <div class="dropdown"></div>
+    </div>
+
+    <script>
+      async function main() {
+        // data initialization
+        var data = await d3
+          .csv("minimum.csv")
+          .then(function (data) {
+            console.log(data);
+            return data;
+          })
+          .catch(function () {
+            console.log("data not processed");
+          });
+
+        const type = d3.annotationLabel;
+
+        var states = d3.map();
+        data.forEach(function (d) {
+          if (!states.has(d["State"])) {
+            states.set(d["State"], d["Year"]);
+          }
+        });
+
+        // scales
+        var x = d3
+          .scaleBand()
+          .domain(states.keys())
+          .range([0, 1000])
+          .paddingInner([0.5]);
+
+        var parseTime = d3.timeParse("%Y");
+
+        var y = d3.scaleLinear().domain([0, 18]).range([600, 0]);
+
+        var svg = d3.select("svg").attr("width", 1200).attr("height", 800);
+
+        var g = svg.append("g").attr("transform", "translate(50,50)");
+
+        // create a tooltip
+        var tooltip = d3
+          .select("body")
+          .append("div")
+          .style("opacity", 0)
+          .attr("class", "tooltip")
+          .style("background-color", "white")
+          .style("border", "solid")
+          .style("border-width", "2px")
+          .style("border-radius", "5px")
+          .style("padding", "5px")
+          .style("width", "200px")
+          .style("height", "50px")
+          .style("position", "absolute");
+
+          //initial data from 1968
+          let filter = data.filter(function (d) {
+            return d["Year"] == 1968;
+          });
+
+
+        // data
+        g.selectAll("rect")
+          .data(filter)
+          .enter()
+          .append("rect")
+          .attr("x", function (d, i) {
+            return x(d["State"]);
+          })
+          .attr("y", function (d, i) {
+            return y(d["State.Minimum.Wage"]);
+          })
+          .attr("width", x.bandwidth())
+          .attr("height", function (d) {
+            return 600 - y(d["State.Minimum.Wage"]);
+          })
+          .on("mouseover", function (d, i) {
+            tooltip
+              .style("opacity", 1)
+              .html("WAGE: " + d["State.Minimum.Wage"] + " \n")
+              .style("top", d3.event.pageY + "px")
+              .style("left", d3.event.pageX + "px");
+          })
+          .on("mouseout", function (d, i) {
+            tooltip.style("opacity", 0);
+          });
+        // y axis
+        var g2 = svg
+          .append("g")
+          .attr("transform", "translate(50,50)")
+          .call(d3.axisLeft(y))
+          .attr("fill", "none")
+          .attr("font-size", "10")
+          .attr("font-family", "Roboto Slab, serif")
+          .attr("text-anchor", "end");
+
+        // x axis
+        var g3 = svg
+          .append("g")
+          .attr("transform", "translate(50,650)")
+          .call(d3.axisBottom(x))
+          .attr("fill", "none")
+          .attr("font-size", "10")
+          .attr("font-family", "Roboto Slab, serif")
+          .selectAll("text")
+          .style("text-anchor", "end")
+          .attr("dx", "-.8em")
+          .attr("dy", ".15em")
+          .attr("transform", "rotate(-65)");
+
+        // x axis label
+        svg
+          .append("text")
+          .attr("x", 550)
+          .attr("y", 750)
+          .style("text-anchor", "middle")
+          .text("State")
+          .attr("font-family", "Roboto Slab, serif");
+
+        // y axis label
+        svg
+          .append("text")
+          .attr("text-anchor", "end")
+          .attr("transform", "rotate(-90)")
+          .attr("y", 0)
+          .attr("x", -300)
+          .attr("dy", ".75em")
+          .text("Minimum Wage in Dollars")
+          .attr("font-family", "Roboto Slab, serif");
+
+        // annotations
+        const annotations = [
+          {
+            note: {
+              label:
+                "Hover on bars to get additional details. (click to remove instructions)",
+              bgPadding: 20,
+              title: "Step 2:",
+            },
+            //can use x, y directly instead of data
+            className: "show-bg",
+            color: ["#800000"],
+            x: 550,
+            y: 600,
+            dy: -137,
+            dx: -162,
+          },
+          {
+            note: {
+              label:
+                "Use a dropdown to show just points from a specific year. (click to remove instructions)",
+              bgPadding: 20,
+              title: "Step 1:",
+            },
+            //can use x, y directly instead of data
+            className: "show-bg",
+            color: ["#800000"],
+            x: 50,
+            y: 800,
+            dy: -600,
+            dx: 100,
+          },
+        ];
+
+        const makeAnnotations = d3
+          .annotation()
+          .editMode(false)
+          //also can set and override in the note.padding property
+          //of the annotation object
+          .notePadding(10)
+          .type(type)
+          .annotations(annotations);
+
+        d3.select("svg")
+          .append("g")
+          .attr("class", "annotation-group")
+          .call(makeAnnotations);
+
+        d3.select("svg").on("click", function () {
+          d3.select(".annotations").remove();
+        });
+
+        // dropdown creation
+        var map = d3.map();
+        data.forEach(function (d) {
+          if (!map.has(d["Year"])) {
+            map.set(d["Year"], d["Year"]);
+          }
+        });
+        var dropdown = d3
+          .select(".dropdown")
+          .append("select")
+          .attr("id", "drop");
+
+        dropdown
+          .selectAll("option")
+          .data(map.keys())
+          .enter()
+          .append("option")
+          .text(function (d) {
+            return d;
+          })
+          .attr("value", function (d) {
+            return d;
+          })
+          .attr("id", function (d) {
+            return d;
+          });
+
+        function updateChart(year) {
+          // dropdown filtering
+          let filtered = data.filter(function (d) {
+            return d["Year"] == year;
+          });
+          svg.selectAll("rect").remove();
+          // data
+          g.selectAll("rect")
+            .data(filtered)
+            .enter()
+            .append("rect")
+            .attr("x", function (d, i) {
+              return x(d["State"]);
+            })
+            .attr("y", function (d, i) {
+              return y(d["State.Minimum.Wage"]);
+            })
+            .attr("width", x.bandwidth())
+            .attr("height", function (d) {
+              return 600 - y(d["State.Minimum.Wage"]);
+            })
+            .on("mouseover", function (d, i) {
+              tooltip
+                .style("opacity", 1)
+                .html("WAGE: " + d["State.Minimum.Wage"] + " \n")
+                .style("top", d3.event.pageY + "px")
+                .style("left", d3.event.pageX + "px");
+            })
+            .on("mouseout", function (d, i) {
+              tooltip.style("opacity", 0);
+            });
+        }
+
+        // dropdown selection
+        d3.selectAll("#drop").on("change", function (d) {
+          var year = d3.select(this).property("value");
+          updateChart(year);
+        });
+      }
+    </script>
+  </body>
+</html>
